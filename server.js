@@ -63,8 +63,8 @@ if (require.main === module) {
   if (config.encryptionKeyEphemeral) {
     console.warn('[open-cloud] WARNING: ENCRYPTION_KEY not set — using ephemeral dev key. Stored bot tokens will NOT survive restarts. Set ENCRYPTION_KEY.');
   }
-  if (!config.sessionSecret || config.sessionSecret.includes('change-me')) {
-    console.warn('[open-cloud] WARNING: SESSION_SECRET looks default. Set a strong SESSION_SECRET.');
+  if (!config.sessionSecret || config.sessionSecret.includes('change-me') || config.sessionSecret.includes('dev-session-secret')) {
+    console.warn('[open-cloud] WARNING: SESSION_SECRET looks default. Set a strong SESSION_SECRET — JWT sessions are only secure with a stable secret shared by all instances.');
   }
   if (!config.loginBotToken) {
     console.warn('[open-cloud] Telegram Login not configured (TELEGRAM_LOGIN_BOT_TOKEN). See README. Dev login:', config.devLocalLogin ? 'ENABLED' : 'disabled');

@@ -28,13 +28,13 @@ router.get('/me', (req, res) => {
   });
 });
 
-// Official Telegram Login Widget verification
+// Official Telegram Login Widget verification (stateless JWT session)
 router.post('/telegram', mw.rateLimit({ max: 20, key: 'auth' }), (req, res) => {
   try {
     const profile = auth.verifyTelegramAuth(req.body || {});
     const user = auth.upsertUser(profile);
-    const sess = auth.createSession(user.id);
-    res.cookie(auth.COOKIE_NAME, sess.id, auth.cookieOptions());
+    const sess = auth.createJwtForUser(user);
+    res.cookie(auth.COOKIE_NAME, sess.token, auth.cookieOptions());
     res.json({ user: mw.publicUser(user) });
   } catch (e) {
     res.status(401).json({ error: 'AUTH_FAILED', message: e.message || 'Telegram login failed.' });
@@ -48,8 +48,8 @@ router.post('/dev', mw.rateLimit({ max: 20, key: 'auth' }), (req, res) => {
   }
   const name = String((req.body && req.body.username) || 'dev').trim().slice(0, 40) || 'dev';
   const user = auth.upsertUser({ telegram_user_id: null, username: `dev_${name}`, display_name: `${name} (dev)`, photo_url: null });
-  const sess = auth.createSession(user.id);
-  res.cookie(auth.COOKIE_NAME, sess.id, auth.cookieOptions());
+  const sess = auth.createJwtForUser(user);
+  res.cookie(auth.COOKIE_NAME, sess.token, auth.cookieOptions());
   res.json({ user: mw.publicUser(user), dev: true });
 });
 

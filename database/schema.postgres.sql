@@ -88,4 +88,10 @@ CREATE INDEX IF NOT EXISTS idx_files_name ON files(name);
 CREATE INDEX IF NOT EXISTS idx_files_created ON files(created_at);
 CREATE INDEX IF NOT EXISTS idx_folders_user_parent ON folders(user_id, parent_id);
 CREATE INDEX IF NOT EXISTS idx_trash_user ON trash(user_id);
+CREATE TABLE IF NOT EXISTS revoked_jwt (
+  jti TEXT PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  revoked_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);

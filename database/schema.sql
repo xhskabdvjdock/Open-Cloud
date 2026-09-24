@@ -91,3 +91,11 @@ CREATE INDEX IF NOT EXISTS idx_folders_user_parent ON folders(user_id, parent_id
 CREATE INDEX IF NOT EXISTS idx_trash_user ON trash(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
+
+-- Stateless JWT revocation list (logout). Stateless sessions themselves
+-- need no storage; only logged-out token IDs are kept here.
+CREATE TABLE IF NOT EXISTS revoked_jwt (
+  jti TEXT PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  revoked_at TEXT NOT NULL
+);
