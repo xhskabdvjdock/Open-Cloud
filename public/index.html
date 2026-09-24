@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Cloud</title>
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2'%3E%3Cpath d='M17.5 19a4.5 4.5 0 0 0 .42-8.98 6.5 6.5 0 0 0-12.7 1.61A4 4 0 0 0 6 19h11.5z'/%3E%3C/svg%3E">
+</head>
+<body>
+<div id="app">
+  <!-- Login view -->
+  <section id="view-login" class="view" hidden>
+    <div class="login-wrap">
+      <div class="login-card">
+        <div class="brand"><span id="login-logo"></span><div><h1>Open Cloud</h1><p data-i18n="tagline">Private cloud storage, powered by your Telegram.</p></div></div>
+        <div id="login-main">
+          <div id="tg-login-slot"></div>
+          <p class="muted small" data-i18n="loginExplain">Log in with your Telegram account. We never ask for your phone number, password, or codes.</p>
+          <div id="login-not-configured" class="notice" hidden></div>
+          <div id="dev-login" hidden>
+            <hr><p class="muted small" data-i18n="devLoginNote">Development login (disabled in production).</p>
+            <div class="row"><input id="dev-username" type="text" maxlength="40" placeholder="username"><button id="dev-login-btn" class="btn primary" data-i18n="continue">Continue</button></div>
+          </div>
+        </div>
+        <div id="login-error" class="error" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup wizard view -->
+  <section id="view-wizard" class="view" hidden>
+    <div class="wizard-wrap">
+      <div class="wizard-card">
+        <div class="brand"><span id="wizard-logo"></span><div><h1 data-i18n="welcome">Welcome to Open Cloud</h1><p class="muted" data-i18n="wizardIntro">Your files are stored through your connected Telegram storage.</p></div></div>
+        <ol class="steps" id="wizard-steps"></ol>
+        <div id="wizard-body"></div>
+        <div id="wizard-error" class="error" hidden></div>
+        <div class="wizard-nav row">
+          <button id="wizard-back" class="btn" data-i18n="back">Back</button>
+          <span class="spacer"></span>
+          <button id="wizard-logout" class="btn ghost" data-i18n="logout">Logout</button>
+          <button id="wizard-next" class="btn primary" data-i18n="next">Next</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main app view -->
+  <section id="view-app" class="view" hidden>
+    <div class="shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="side-brand"><span id="side-logo"></span><strong>Open Cloud</strong>
+          <button id="side-collapse" class="icon-btn" aria-label="menu"></button>
+        </div>
+        <nav class="side-nav" id="side-nav"></nav>
+        <div class="side-storage">
+          <div class="storage-head"><span id="storage-icon"></span><span data-i18n="storage">Storage</span><span class="spacer"></span><span id="storage-pct" class="muted small"></span></div>
+          <div class="meter"><div id="storage-bar"></div></div>
+          <div id="storage-text" class="muted small"></div>
+        </div>
+        <div class="side-foot">
+          <button id="btn-settings" class="side-link"></button>
+          <button id="btn-lang" class="side-link"></button>
+          <button id="btn-theme" class="side-link"></button>
+          <button id="btn-logout" class="side-link"></button>
+        </div>
+      </aside>
+      <main class="main" id="drop-zone">
+        <header class="topbar">
+          <button id="btn-menu" class="icon-btn only-mobile" aria-label="menu"></button>
+          <div class="searchbox"><span id="search-icon"></span><input id="search" type="search" autocomplete="off"><kbd>Ctrl K</kbd></div>
+          <div class="top-actions">
+            <div class="sortwrap"><button id="btn-sort" class="btn"></button><div id="sort-menu" class="menu" hidden></div></div>
+            <button id="btn-view" class="icon-btn" aria-label="toggle view"></button>
+            <button id="btn-newfolder" class="btn"></button>
+            <button id="btn-upload" class="btn primary"></button>
+          </div>
+        </header>
+        <div class="crumbs" id="crumbs"></div>
+        <div id="bulkbar" class="bulkbar" hidden></div>
+        <div id="browser" class="browser">
+          <div id="folder-row" class="folder-row"></div>
+          <div id="file-area" class="file-area"></div>
+          <div id="load-more-wrap" class="center" hidden><button id="btn-more" class="btn"></button></div>
+          <div id="browser-state" class="state" hidden></div>
+        </div>
+        <div id="queue" class="queue" hidden></div>
+      </main>
+    </div>
+  </section>
+</div>
+
+<!-- Preview modal -->
+<div id="preview-modal" class="modal-backdrop" hidden>
+  <div class="modal preview">
+    <div class="preview-bar"><span id="preview-title"></span><span class="spacer"></span>
+      <button id="pv-prev" class="icon-btn" aria-label="previous"></button>
+      <button id="pv-next" class="icon-btn" aria-label="next"></button>
+      <button id="pv-zoom-out" class="icon-btn" aria-label="zoom out"></button>
+      <button id="pv-zoom-in" class="icon-btn" aria-label="zoom in"></button>
+      <button id="pv-download" class="icon-btn" aria-label="download"></button>
+      <button id="pv-close" class="icon-btn" aria-label="close"></button>
+    </div>
+    <div id="preview-body" class="preview-body"></div>
+  </div>
+</div>
+
+<!-- Generic modal -->
+<div id="modal" class="modal-backdrop" hidden><div class="modal" id="modal-box"></div></div>
+<div id="ctx" class="menu ctx" hidden></div>
+<div id="toasts" class="toasts"></div>
+
+<input type="file" id="file-input" multiple hidden>
+<input type="file" id="folder-input" webkitdirectory hidden>
+<script src="/app.js"></script>
+</body>
+</html>
