@@ -14,7 +14,19 @@ const mw = require('./src/middleware');
 
 function createApp() {
   dbmod.open();
-  fs.mkdirSync(config.tmpDir, { recursive: true });
+  try {
+    fs.mkdirSync(config.tmpDir, { recursive: true });
+  } catch (e) {
+    // Serverless read-only FS: use /tmp instead.
+    const fallback = '/tmp/opencloud-tmp';
+    if (config.tmpDir !== fallback) {
+      console.warn(`[open-cloud] tmp dir not writable, falling back to ${fallback}`);
+      try { config.tmpDir = fallback; } catch { /* */ }
+      fs.mkdirSync(fallback, { recursive: true });
+    } else {
+      throw e;
+    }
+  }
 
   const app = express();
   app.disable('x-powered-by');

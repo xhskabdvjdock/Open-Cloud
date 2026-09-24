@@ -35,7 +35,13 @@ function loadEncryptionKey() {
 
 const enc = loadEncryptionKey();
 
-const IS_VERCEL = !!(process.env.VERCEL || process.env.VERCEL_ENV);
+const IS_VERCEL = !!(
+  process.env.VERCEL ||
+  process.env.VERCEL_ENV ||
+  process.env.NOW_REGION ||
+  process.env.LAMBDA_TASK_ROOT ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME
+);
 
 const config = {
   env: NODE_ENV,

@@ -18,11 +18,24 @@ function now() {
 
 function open(customPath) {
   if (db) return db;
-  const file = customPath || config.databasePath;
+  let file = customPath || config.databasePath;
   if (!file) {
     throw new Error('DATABASE_URL points to PostgreSQL: see database/schema.postgres.sql for migration. SQLite build requires DATABASE_PATH.');
   }
-  fs.mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
+  // Serverless (Vercel /var/task is read-only): fall back to /tmp on any mkdir failure.
+  try {
+    fs.mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
+  } catch (e) {
+    const fallback = '/tmp/opencloud.db';
+    if (path.resolve(file) !== fallback) {
+      console.warn(`[open-cloud] DB dir not writable (${e.code || e.message}), falling back to ${fallback}`);
+      file = fallback;
+      try { config.databasePath = fallback; } catch { /* */ }
+      fs.mkdirSync(path.dirname(fallback), { recursive: true });
+    } else {
+      throw e;
+    }
+  }
   db = new DatabaseSync(path.resolve(file));
   db.exec('PRAGMA journal_mode = WAL;');
   db.exec('PRAGMA foreign_keys = ON;');
