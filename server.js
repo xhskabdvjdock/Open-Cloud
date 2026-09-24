@@ -61,4 +61,22 @@ if (require.main === module) {
   app.listen(config.port, () => console.log(`[open-cloud] listening on http://localhost:${config.port}`));
 }
 
-module.exports = { createApp };
+// ---- Vercel serverless compatibility ----
+// Vercel expects the module's default export to be a function (req, res).
+// We export a lazy handler that builds/caches the Express app on first hit,
+// while keeping { createApp } available for tests and `node server.js`.
+let _cachedApp = null;
+function getApp() {
+  if (!_cachedApp) _cachedApp = createApp();
+  return _cachedApp;
+}
+function vercelHandler(req, res) {
+  return getApp()(req, res);
+}
+vercelHandler.createApp = createApp;
+vercelHandler.getApp = getApp;
+
+module.exports = vercelHandler;
+module.exports.createApp = createApp;
+module.exports.getApp = getApp;
+module.exports.default = vercelHandler;

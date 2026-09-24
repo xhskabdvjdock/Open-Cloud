@@ -17,7 +17,7 @@ let encryptionKey = null;
 function loadEncryptionKey() {
   const raw = (process.env.ENCRYPTION_KEY || '').trim();
   if (!raw) {
-    if (IS_PROD) throw new Error('ENCRYPTION_KEY is required in production');
+    if (IS_PROD && !process.env.VERCEL && !process.env.VERCEL_ENV) throw new Error('ENCRYPTION_KEY is required in production');
     // Dev fallback: derive a stable-but-insecure key so the app runs.
     // A warning is printed at startup.
     return { key: crypto.createHash('sha256').update('open-cloud-dev-key').digest(), ephemeral: true };
@@ -35,15 +35,17 @@ function loadEncryptionKey() {
 
 const enc = loadEncryptionKey();
 
+const IS_VERCEL = !!(process.env.VERCEL || process.env.VERCEL_ENV);
+
 const config = {
   env: NODE_ENV,
   isProd: IS_PROD,
   port: Number(process.env.PORT || 3000),
   databasePath: process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgres')
     ? null
-    : (process.env.DATABASE_PATH || './data/opencloud.db'),
+    : (process.env.DATABASE_PATH || (IS_VERCEL ? '/tmp/opencloud.db' : './data/opencloud.db')),
   databaseUrl: process.env.DATABASE_URL || '',
-  sessionSecret: process.env.SESSION_SECRET || (IS_PROD ? null : 'dev-session-secret-not-for-production'),
+  sessionSecret: process.env.SESSION_SECRET || (IS_PROD && !IS_VERCEL ? null : 'dev-session-secret-not-for-production'),
   encryptionKey: enc.key,
   encryptionKeyEphemeral: enc.ephemeral,
   telegramApiBase: (process.env.TELEGRAM_API_BASE || 'https://api.telegram.org').replace(/\/+$/, ''),
@@ -52,11 +54,12 @@ const config = {
   maxUploadBytes: parseBytes(process.env.MAX_UPLOAD_BYTES, 50 * 1024 * 1024),
   devLocalLogin: (!IS_PROD) && (process.env.DEV_ALLOW_LOCAL_LOGIN === 'true' || process.env.DEV_ALLOW_LOCAL_LOGIN === '1'),
   sessionDays: 30,
-  tmpDir: path.join(__dirname, '..', 'tmp'),
-  dataDir: path.join(__dirname, '..', 'data'),
+  tmpDir: IS_VERCEL ? '/tmp/opencloud-tmp' : path.join(__dirname, '..', 'tmp'),
+  dataDir: IS_VERCEL ? '/tmp' : path.join(__dirname, '..', 'data'),
+  isVercel: IS_VERCEL,
 };
 
-if (IS_PROD && !config.sessionSecret) {
+if (IS_PROD && !config.sessionSecret && !config.isVercel) {
   throw new Error('SESSION_SECRET is required in production');
 }
 
